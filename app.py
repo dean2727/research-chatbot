@@ -33,34 +33,6 @@ def create_llm(bedrock_client):
                   model_kwargs={'temperature':0})
     return llm
 
-def load_pdfs(chunk_size=3000, chunk_overlap=100):
-    '''
-    Load PDF documents
-    '''
-    
-    loader=PyPDFDirectoryLoader("PDF Documents")
-    documents=loader.load()
-
-    # split the documents into chunks
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, 
-                                                   chunk_overlap=chunk_overlap)
-    docs = text_splitter.split_documents(documents=documents)
-    return docs
-
-def create_vector_store(docs):
-    '''
-    Build a vector store, using the Titan embedding model from AWS
-    '''
-    # Set up bedrock client
-    bedrock = create_client()
-    bedrock_embeddings = BedrockEmbeddings(model_id='amazon.titan-embed-text-v1', client=bedrock)
-
-    # create and save the vector store
-    vector_store = FAISS.from_documents(docs, bedrock_embeddings)
-    vector_store.save_local("faiss_index")
-    
-    return None
-
 @cl.on_chat_start
 async def create_qa_chain():
 
@@ -71,7 +43,7 @@ async def create_qa_chain():
     llm = create_llm(bedrock_client=bedrock_client)
 
     # load embeddings and vector store
-    bedrock_embeddings=BedrockEmbeddings(model_id='amazon.titan-embed-text-v1', client=bedrock_client)
+    bedrock_embeddings = BedrockEmbeddings(model_id='amazon.titan-embed-text-v1', client=bedrock_client)
     vector_store = FAISS.load_local('faiss_index', bedrock_embeddings, allow_dangerous_deserialization=True)
     
     # create memory history
@@ -84,12 +56,13 @@ async def create_qa_chain():
     )
 
     # create qa chain
-    qa_chain = ConversationalRetrievalChain.from_llm(llm, 
-                                           chain_type='stuff', 
-                                           retriever=vector_store.as_retriever(search_type='similarity', search_kwargs={"k":3}),
-                                           return_source_documents=True,
-                                           memory=memory
-                                           )
+    qa_chain = ConversationalRetrievalChain.from_llm(
+        llm, 
+        chain_type='stuff', 
+        retriever=vector_store.as_retriever(search_type='similarity', search_kwargs={"k":3}),
+        return_source_documents=True,
+        memory=memory
+    )
     
     # add custom messages to the user interface
     msg = cl.Message(content="Loading the bot...")
@@ -97,7 +70,7 @@ async def create_qa_chain():
     msg.content = "Hi, Welcome to the QA Chatbot! Please ask your question."
     await msg.update()
     
-    cl.user_session.set('qa_chain' ,qa_chain)
+    cl.user_session.set('qa_chain', qa_chain)
 
 @cl.on_message
 async def generate_response(query):
@@ -105,7 +78,7 @@ async def generate_response(query):
 
     res = await qa_chain.acall(query.content, callbacks=[cl.AsyncLangchainCallbackHandler(
         stream_final_answer=True, 
-        )])
+    )])
 
     # extract results and source documents
     result, source_documents = res['answer'], res['source_documents']

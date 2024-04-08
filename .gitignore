@@ -1,1 +1,5 @@
 config.py
+venv/*
+__pycache__/
+.chainlit/
+.files/
