@@ -17,8 +17,8 @@ def create_client():
     '''
     bedrock = boto3.client(service_name='bedrock-runtime',
                         region_name=aws_region_name,
-                        aws_access_key_id =aws_access_key,
-                        aws_secret_access_key =aws_secret_key
+                        aws_access_key_id=aws_access_key,
+                        aws_secret_access_key=aws_secret_key
                         )
     return bedrock
 
@@ -67,7 +67,7 @@ async def create_qa_chain():
     # add custom messages to the user interface
     msg = cl.Message(content="Loading the bot...")
     await msg.send()
-    msg.content = "Hi, Welcome to the QA Chatbot! Please ask your question."
+    msg.content = "Hello, I am a bot who can help you answer questions about research in AI. Ask me anything, and I will do my best to give you a great answer!"
     await msg.update()
     
     cl.user_session.set('qa_chain', qa_chain)
