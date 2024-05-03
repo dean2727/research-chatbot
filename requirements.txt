@@ -3,3 +3,7 @@ boto3
 chainlit
 faiss-cpu
 pypdf
+crewai
+crewai[tools]
+scholarly
+beautifulsoup4

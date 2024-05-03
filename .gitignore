@@ -6,3 +6,5 @@ __pycache__/
 .env
 .devcontainer/
 .github/
+.DS_store/
+PDF_Documents/.DS_store/
